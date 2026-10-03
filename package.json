@@ -1,0 +1,227 @@
+{
+  "name": "azure-pipelines-field-guide-vscode",
+  "displayName": "Azure Pipelines Field Guide",
+  "description": "Context-aware IntelliSense for variables in Azure Pipelines YAML.",
+  "version": "1.0.0",
+  "publisher": "PalmEmanuel",
+  "author": {
+    "name": "Emanuel Palm",
+    "url": "https://github.com/PalmEmanuel"
+  },
+  "license": "MIT",
+  "icon": "AzurePipelinesFieldGuide.png",
+  "galleryBanner": {
+    "color": "#005FD7",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/issues"
+  },
+  "homepage": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide#readme",
+  "keywords": [
+    "azure",
+    "azure pipelines",
+    "yaml",
+    "intellisense",
+    "autocomplete",
+    "variables",
+    "ci/cd"
+  ],
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:azure-pipelines",
+    "onView:azurePipelinesFieldGuide.variables",
+    "onCommand:azurePipelinesFieldGuide.browseVariables",
+    "onCommand:azurePipelinesFieldGuide.refreshVariables",
+    "onCommand:azurePipelinesFieldGuide.copyMacroSyntax",
+    "onCommand:azurePipelinesFieldGuide.copyExpressionSyntax",
+    "onCommand:azurePipelinesFieldGuide.copyPropertySyntax"
+  ],
+  "extensionDependencies": [
+    "ms-azure-devops.azure-pipelines"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "azurePipelinesFieldGuide.browseVariables",
+        "title": "Azure Pipelines Field Guide: Browse Predefined Variables",
+        "icon": "$(symbol-variable)"
+      },
+      {
+        "command": "azurePipelinesFieldGuide.refreshVariables",
+        "title": "Azure Pipelines Field Guide: Refresh Variables",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "azurePipelinesFieldGuide.copyMacroSyntax",
+        "title": "Azure Pipelines Field Guide: Copy Macro Syntax",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
+        "title": "Azure Pipelines Field Guide: Copy Expression Syntax",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "azurePipelinesFieldGuide.copyPropertySyntax",
+        "title": "Azure Pipelines Field Guide: Copy Property Syntax",
+        "icon": "$(copy)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "azurePipelinesFieldGuide.copyMacroSyntax",
+          "when": "false"
+        },
+        {
+          "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
+          "when": "false"
+        },
+        {
+          "command": "azurePipelinesFieldGuide.copyPropertySyntax",
+          "when": "false"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "azurePipelinesFieldGuide.copyMacroSyntax",
+          "when": "view == azurePipelinesFieldGuide.variables && (viewItem == azurePipelinesVariable || viewItem == azurePipelinesVariable.simple)",
+          "group": "copy@1"
+        },
+        {
+          "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
+          "when": "view == azurePipelinesFieldGuide.variables && (viewItem == azurePipelinesVariable || viewItem == azurePipelinesVariable.simple)",
+          "group": "copy@2"
+        },
+        {
+          "command": "azurePipelinesFieldGuide.copyPropertySyntax",
+          "when": "view == azurePipelinesFieldGuide.variables && viewItem == azurePipelinesVariable.simple",
+          "group": "copy@3"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "azurePipelinesFieldGuide.refreshVariables",
+          "when": "view == azurePipelinesFieldGuide.variables",
+          "group": "navigation"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "azurePipelinesFieldGuide.variables",
+          "name": "Azure Pipelines Variables",
+          "icon": "AzurePipelinesFieldGuide.png"
+        }
+      ]
+    },
+    "semanticTokenScopes": [
+      {
+        "language": "azure-pipelines",
+        "scopes": {
+          "variable.readonly.defaultLibrary": [
+            "variable.other.constant.azure-pipelines"
+          ],
+          "variable": [
+            "variable.other.readwrite.azure-pipelines"
+          ]
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Azure Pipelines Field Guide",
+      "properties": {
+        "azurePipelinesFieldGuide.completions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Show predefined and document-defined Azure Pipelines variable completions."
+        },
+        "azurePipelinesFieldGuide.hovers.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Show documentation when hovering over an Azure Pipelines variable."
+        },
+        "azurePipelinesFieldGuide.completions.includeDocumentVariables": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Include variables declared in the current YAML document in completions."
+        },
+        "azurePipelinesFieldGuide.diagnostics.invalidVariableSyntax.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Warn when Azure Pipelines variable index syntax is missing the required quoted variable name."
+        },
+        "azurePipelinesFieldGuide.diagnostics.expressionVariableCasing.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Warn when predefined variables in Azure Pipelines expressions do not use their documented casing."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "build": "npm run check && node esbuild.mjs",
+    "package": "npm run check && node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "check": "npm run typecheck && npm run lint && npm run test:generator",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src scripts",
+    "compile-tests": "tsc --project tsconfig.test.json",
+    "pretest": "npm run build && npm run compile-tests",
+    "test": "mocha \"out/test/unit/**/*.test.js\" --ui tdd && vscode-test",
+    "test:unit": "npm run test:generator && npm run compile-tests && mocha \"out/test/unit/**/*.test.js\" --ui tdd",
+    "test:generator": "node --test scripts/test/*.test.mjs",
+    "update:variables": "node scripts/update-predefined-variables.mjs",
+    "check:variables": "node scripts/update-predefined-variables.mjs --check",
+    "test:integration": "npm run build && npm run compile-tests && vscode-test --config .vscode-test.mjs",
+    "vsix": "npm run package && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.18.10",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.25.11",
+    "eslint": "^10.12.0",
+    "mocha": "^12.0.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0"
+  },
+  "overrides": {
+    "diff": "^8.0.3",
+    "serialize-javascript": "^7.0.5"
+  }
+}

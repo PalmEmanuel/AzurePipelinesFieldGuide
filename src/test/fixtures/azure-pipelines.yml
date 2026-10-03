@@ -1,0 +1,26 @@
+trigger: none
+
+variables:
+  buildConfiguration: Release
+
+steps:
+- script: echo $(bUiLd.)
+- script: echo $(buildC)
+- script: echo $(Build.BuildId)
+- script: echo $(buildConfiguration)
+- script: echo $(bUiLd.BuildId)
+- script: echo invalid-index
+  condition: eq(variables[build.BuildId], 'yyyy')
+- script: echo quoted-index
+  condition: eq(variables['build.BuildId'], 'yyyy')
+- script: echo property
+  condition: eq(variables.buildC, 'Release')
+- script: echo invalid-property
+  condition: eq(variables.Build.BuildId, 'yyyy')
+- script: echo valid-property
+  condition: eq(variables.buildConfiguration, 'yyyy')
+- script: echo multiline-condition
+  condition: |
+    eq(variables['build.BuildId'], 'yyyy')
+# Comments should not be matched for intellisense etc
+# $(Build.BuildId) variables['Build.BuildId']
