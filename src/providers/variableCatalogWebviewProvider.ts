@@ -275,15 +275,23 @@ export function renderVariableCatalogHtml(webview: vscode.Webview): string {
     const vscode = acquireVsCodeApi();
     const contextMenu = document.getElementById('context-menu');
     let activeVariable = null;
+    let menuOpener = null;
 
-    function hideContextMenu() {
+    function hideContextMenu(restoreFocus = true) {
+      const opener = menuOpener;
+      const wasOpen = !contextMenu.hidden;
       contextMenu.hidden = true;
       contextMenu.replaceChildren();
       activeVariable = null;
+      menuOpener = null;
+      if (restoreFocus && wasOpen) {
+        opener?.focus();
+      }
     }
 
-    function showContextMenuAt(x, y, card, alignRight) {
+    function showContextMenuAt(x, y, card, opener, alignRight) {
       activeVariable = card.dataset.name;
+      menuOpener = opener;
       contextMenu.replaceChildren();
       card.querySelectorAll('.syntax-row[data-syntax]').forEach((syntaxRow) => {
         const option = document.createElement('button');
@@ -311,12 +319,13 @@ export function renderVariableCatalogHtml(webview: vscode.Webview): string {
       const top = Math.max(4, Math.min(y, viewportHeight - bounds.height - 4));
       contextMenu.style.left = left + 'px';
       contextMenu.style.top = top + 'px';
+      contextMenu.querySelector('[role="menuitem"]')?.focus();
     }
 
     document.querySelectorAll('.variable-card').forEach((card) => {
       card.addEventListener('contextmenu', (event) => {
         event.preventDefault();
-        showContextMenuAt(event.clientX, event.clientY, card);
+        showContextMenuAt(event.clientX, event.clientY, card, card.querySelector('summary'), false);
       });
     });
 
@@ -328,7 +337,7 @@ export function renderVariableCatalogHtml(webview: vscode.Webview): string {
         }
         event.stopPropagation();
         const bounds = button.getBoundingClientRect();
-        showContextMenuAt(bounds.right, bounds.bottom + 4, card, true);
+        showContextMenuAt(bounds.right, bounds.bottom + 4, card, button, true);
       });
     });
 
@@ -347,15 +356,45 @@ export function renderVariableCatalogHtml(webview: vscode.Webview): string {
 
     document.addEventListener('click', (event) => {
       if (!contextMenu.contains(event.target)) {
-        hideContextMenu();
+        hideContextMenu(false);
       }
     });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         hideContextMenu();
+        return;
+      }
+      if (contextMenu.hidden) {
+        return;
+      }
+      if (event.key === 'Tab') {
+        hideContextMenu();
+        return;
+      }
+      const menuItems = Array.from(contextMenu.querySelectorAll('[role="menuitem"]'));
+      const activeIndex = menuItems.indexOf(document.activeElement);
+      let nextIndex;
+      switch (event.key) {
+        case 'ArrowDown':
+          nextIndex = (activeIndex + 1) % menuItems.length;
+          break;
+        case 'ArrowUp':
+          nextIndex = (activeIndex - 1 + menuItems.length) % menuItems.length;
+          break;
+        case 'Home':
+          nextIndex = 0;
+          break;
+        case 'End':
+          nextIndex = menuItems.length - 1;
+          break;
+      }
+      if (nextIndex !== undefined && menuItems.length > 0) {
+        event.preventDefault();
+        menuItems[nextIndex].focus();
       }
     });
-    window.addEventListener('blur', hideContextMenu);
+    window.addEventListener('blur', () => hideContextMenu(false));
   </script>
 </body>
 </html>`;
