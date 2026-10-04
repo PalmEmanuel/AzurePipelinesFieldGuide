@@ -27,7 +27,7 @@ suite('Azure Pipelines Field Guide integration', () => {
     assert.equal(document.languageId, 'azure-pipelines');
   });
 
-  test('provides a custom catalog webview with full variable details', () => {
+  test('provides a custom catalog webview with full variable details', async () => {
     const catalogHtml = renderVariableCatalogBody(predefinedVariables);
     assert.match(catalogHtml, /Build\.BuildId/);
     assert.match(catalogHtml, /ID of the record for the completed build/);
@@ -42,24 +42,42 @@ suite('Azure Pipelines Field Guide integration', () => {
     const packageJson = extension.packageJSON as {
       contributes?: {
         commands?: Array<{ command: string; title: string; icon?: string }>;
+        viewsContainers?: {
+          activitybar?: Array<{ id: string; title: string; icon: string }>;
+        };
         views?: {
-          explorer?: Array<{ id: string; name: string; type?: string; icon?: string }>;
+          azurePipelinesFieldGuide?: Array<{
+            id: string;
+            name: string;
+            type?: string;
+            icon?: string;
+            contextualTitle?: string;
+          }>;
         };
       };
     };
-    const catalogView = packageJson.contributes?.views?.explorer?.find(
+    assert.deepEqual(packageJson.contributes?.viewsContainers?.activitybar, [
+      {
+        id: 'azurePipelinesFieldGuide',
+        title: 'Azure Pipelines Field Guide',
+        icon: 'assets/AzurePipelinesFieldGuide.svg',
+      },
+    ]);
+    const catalogView = packageJson.contributes?.views?.azurePipelinesFieldGuide?.find(
       ({ id }) => id === 'azurePipelinesFieldGuide.variables',
     );
     assert.deepEqual(catalogView, {
       id: 'azurePipelinesFieldGuide.variables',
       name: 'Azure Pipelines Variables',
       type: 'webview',
-      icon: 'AzurePipelinesFieldGuide.png',
+      icon: 'assets/AzurePipelinesFieldGuide.svg',
+      contextualTitle: 'Azure Pipelines Variables',
     });
     assert.equal(
       packageJson.contributes?.commands?.some(({ command }) => command.includes('.copy.')),
       false,
     );
+    await vscode.commands.executeCommand('azurePipelinesFieldGuide.browseVariables');
   });
 
   test('offers predefined variables after a namespace prefix', async () => {
