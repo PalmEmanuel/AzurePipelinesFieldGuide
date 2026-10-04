@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-field-guide-vscode",
   "displayName": "Azure Pipelines Field Guide",
-  "description": "Context-aware IntelliSense for variables in Azure Pipelines YAML.",
+  "description": "Extended IntelliSense for Azure Pipelines YAML with autocompletion for variables and more.",
   "version": "1.0.0",
   "publisher": "PalmEmanuel",
   "author": {
@@ -9,7 +9,7 @@
     "url": "https://github.com/PalmEmanuel"
   },
   "license": "MIT",
-  "icon": "AzurePipelinesFieldGuide.png",
+  "icon": "assets/AzurePipelinesFieldGuide.png",
   "galleryBanner": {
     "color": "#005FD7",
     "theme": "dark"
@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/issues"
   },
-  "homepage": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide#readme",
+  "homepage": "https://github.com/PalmEmanuel/AzurePipelinesFieldGuide",
   "keywords": [
     "azure",
     "azure pipelines",
@@ -64,13 +64,23 @@
         "icon": "$(symbol-variable)"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "azurePipelinesFieldGuide",
+          "title": "Azure Pipelines Field Guide",
+          "icon": "assets/AzurePipelinesFieldGuide.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "azurePipelinesFieldGuide": [
         {
           "id": "azurePipelinesFieldGuide.variables",
           "name": "Azure Pipelines Variables",
           "type": "webview",
-          "icon": "AzurePipelinesFieldGuide.png"
+          "icon": "assets/AzurePipelinesFieldGuide.svg",
+          "contextualTitle": "Azure Pipelines Variables"
         }
       ]
     },

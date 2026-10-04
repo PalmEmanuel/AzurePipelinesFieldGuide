@@ -40,9 +40,9 @@ The manifest declares `ms-azure-devops.azure-pipelines` in `extensionDependencie
 - Hover provider.
 - Semantic-token provider using the `variable` legend with readonly/default-library modifiers for predefined variables.
 - Code-action provider for syntax diagnostics and Quick Fixes.
-- Explorer webview provider for the predefined-variable catalog.
+- Activity Bar webview provider for the predefined-variable catalog.
 
-The extension contributes a browse command. The predefined-variable catalog is rendered in a custom Explorer webview, which provides wrapped descriptions, filtering, copy buttons, and a dynamic right-click menu whose labels contain the selected variable's exact syntax. Copy actions are handled as webview messages rather than per-variable command contributions. All registrations are added to the extension context for disposal.
+The extension contributes a browse command that opens its dedicated Activity Bar container. The predefined-variable catalog is rendered in a custom webview, which provides wrapped descriptions, filtering, copy buttons, and a dynamic right-click menu whose labels contain the selected variable's exact syntax. Copy actions are handled as webview messages rather than per-variable command contributions. All registrations are added to the extension context for disposal.
 
 ## Completion model
 
@@ -71,7 +71,7 @@ Predefined-variable presentations include the conventional environment-variable 
 
 The syntax diagnostics provider only warns for clear malformed index references in expression contexts, such as `variables[Build.SourceBranch]`. It also checks casing inside expression references, where the expression engine may require the documented spelling. Macro references remain case-insensitive and do not receive casing warnings. Bare text like `Build.` is ignored.
 
-The variable catalog is exposed through a custom Explorer webview as one compact alphabetical list. Each variable is an expandable HTML details block with a wrapped full description, macro/expression/property and environment-variable syntax rows, one copy button that opens the same dynamic context menu as right-click, environment-variable metadata, template availability, and an official Microsoft Learn button. The webview also provides a non-sticky search field; its copy and documentation actions are validated in the extension host before they are performed. The view is backed entirely by the bundled catalog and never performs network retrieval at runtime.
+The variable catalog is exposed through a custom webview in the Azure Pipelines Field Guide Activity Bar container as one compact alphabetical list. Each variable is an expandable HTML details block with a wrapped full description, macro/expression/property and environment-variable syntax rows, one copy button that opens the same dynamic context menu as right-click, environment-variable metadata, template availability, and an official Microsoft Learn button. The webview also provides a non-sticky search field; its copy and documentation actions are validated in the extension host before they are performed. The view is backed entirely by the bundled catalog and never performs network retrieval at runtime.
 
 There are three diagnostic codes:
 

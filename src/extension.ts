@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     vscode.commands.registerCommand(
       'azurePipelinesFieldGuide.browseVariables',
-      () => vscode.commands.executeCommand('workbench.view.explorer'),
+      () => vscode.commands.executeCommand('workbench.view.extension.azurePipelinesFieldGuide'),
     ),
     vscode.languages.registerCompletionItemProvider(
       AZURE_PIPELINES_SELECTOR,

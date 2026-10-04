@@ -13,7 +13,7 @@ All notable changes to Azure Pipelines Field Guide are documented here.
 - Multiline expression support for `${{ ... }}`, `$[ ... ]`, and `condition: |` / `condition: >` block scalars.
 - Hover documentation with Microsoft-provided descriptions, syntax examples, template availability, environment-variable equivalents, and anchored official Microsoft Learn links.
 - Semantic highlighting for recognized predefined and document-defined variables in valid Azure Pipelines syntax.
-- Compact alphabetical custom Explorer webview catalog with wrapped descriptions, filtering, environment-variable equivalents, template availability, and clickable official documentation links.
+- Dedicated Azure Pipelines Field Guide Activity Bar container with a compact alphabetical webview catalog, wrapped descriptions, filtering, environment-variable equivalents, template availability, and clickable official documentation links.
 - Expandable variable entries with macro, expression, property, and environment-variable syntax rows, copy buttons, and a dynamic right-click menu containing the exact syntax for the selected variable.
 - Command Palette command to browse predefined variables.
 - Source-backed predefined-variable retrieval script with recursive Markdown include parsing.

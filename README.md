@@ -1,7 +1,7 @@
 # Azure Pipelines Field Guide
 
 <p align="center">
-  <img src="AzurePipelinesFieldGuide.png" width="256" alt="Azure Pipelines Field Guide logo">
+  <img src="assets/AzurePipelinesFieldGuide.png" width="256" alt="Azure Pipelines Field Guide logo">
 </p>
 
 Azure Pipelines Field Guide is a Visual Studio Code extension that adds context-aware IntelliSense, hover documentation, semantic highlighting, and syntax diagnostics for variables in Azure Pipelines YAML files.
@@ -99,11 +99,13 @@ Comments are ignored by the variable scanner, so examples or commands in YAML co
 
 ### Variable catalog sidebar
 
-Open the Explorer sidebar and open **Azure Pipelines Variables** to browse the complete bundled predefined-variable catalog in one compact alphabetical list. Expand a variable to reveal its wrapped full description, syntax examples, environment-variable equivalent, template availability, and official documentation link. The view includes filtering, a copy button, and a dynamic right-click menu with the exact syntax, such as `Copy as "$(Build.BuildId)"`, `Copy as "variables['Build.BuildId']"`, and `Copy as "BUILD_BUILDID"` for environment variables.
+Open **Azure Pipelines Field Guide** from the Activity Bar, then open **Azure Pipelines Variables** to browse the complete bundled predefined-variable catalog in one compact alphabetical list. Expand a variable to reveal its wrapped full description, syntax examples, environment-variable equivalent, template availability, and official documentation link. The view includes filtering, a copy button, and a dynamic right-click menu with the exact syntax, such as `Copy as "$(Build.BuildId)"`, `Copy as "variables['Build.BuildId']"`, and `Copy as "BUILD_BUILDID"` for environment variables.
 
 Right-click a variable to copy its macro syntax, expression syntax, or—when valid—simple property syntax. The webview builds these actions dynamically from the selected variable, so there are no per-variable command contributions in `package.json`.
 
 The same view is available from the Command Palette with **Azure Pipelines Field Guide: Browse Predefined Variables**. The catalog is bundled with the extension and is updated by CI when the Microsoft documentation source changes.
+
+If you previously moved the catalog into Explorer, use **View: Reset View Locations** once to return it to its own Activity Bar icon.
 
 ## Settings
 
