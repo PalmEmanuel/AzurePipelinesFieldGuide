@@ -4,7 +4,7 @@ All notable changes to Azure Pipelines Field Guide are documented here.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this file.
 
-## [v0.1.0] - 2026-10-04
+## [v1.0.0] - 2026-10-04
 
 ### Added
 
@@ -19,3 +19,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this f
 - Expandable variable entries with macro, expression, property, and environment-variable syntax rows, copy buttons, and a dynamic right-click menu containing the exact syntax for the selected variable.
 - Command Palette command to browse predefined variables.
 - Generated descriptions, explicit template-availability metadata, and section-anchored documentation URLs.
+
+## [v0.1.0] - 2026-10-04
+
+Project initialized.
