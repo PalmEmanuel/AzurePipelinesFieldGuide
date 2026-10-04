@@ -42,7 +42,7 @@ The manifest declares `ms-azure-devops.azure-pipelines` in `extensionDependencie
 - Code-action provider for syntax diagnostics and Quick Fixes.
 - Explorer webview provider for the predefined-variable catalog.
 
-The extension contributes a browse command. The predefined-variable catalog is rendered in a custom Explorer webview, which provides wrapped descriptions, filtering, copy buttons, and a dynamic right-click menu whose labels contain the selected variable's exact syntax. Copy actions are handled as webview messages rather than per-variable command contributions. All registrations are added to the extension context for disposal. The manifest does not list explicit command, view, or language activation events because VS Code generates those activation triggers from the contributions for the declared minimum engine version.
+The extension contributes a browse command. The predefined-variable catalog is rendered in a custom Explorer webview, which provides wrapped descriptions, filtering, copy buttons, and a dynamic right-click menu whose labels contain the selected variable's exact syntax. Copy actions are handled as webview messages rather than per-variable command contributions. All registrations are added to the extension context for disposal.
 
 ## Completion model
 

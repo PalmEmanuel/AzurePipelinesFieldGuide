@@ -40,7 +40,6 @@ suite('Azure Pipelines Field Guide integration', () => {
     assert.match(catalogHtml, /Open official documentation/);
 
     const packageJson = extension.packageJSON as {
-      activationEvents?: string[];
       contributes?: {
         commands?: Array<{ command: string; title: string; icon?: string }>;
         views?: {
@@ -48,7 +47,6 @@ suite('Azure Pipelines Field Guide integration', () => {
         };
       };
     };
-    assert.equal(packageJson.activationEvents, undefined);
     const catalogView = packageJson.contributes?.views?.explorer?.find(
       ({ id }) => id === 'azurePipelinesFieldGuide.variables',
     );
