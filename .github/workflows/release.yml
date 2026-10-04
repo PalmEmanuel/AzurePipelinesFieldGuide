@@ -1,4 +1,4 @@
-name: Release VSIX
+name: Build, Test, and Release (if tag)
 
 on:
   push:
@@ -6,47 +6,162 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  NODE_VERSION: '22'
+
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  package:
-    name: Package extension
+  build:
+    name: Build extension
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v7
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - run: npm ci
-      - run: npm run check
-      - run: npm run package
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Verify tagged package version
-        if: github.event_name == 'push'
-        run: |
-          version="$(node -p "require('./package.json').version")"
-          test "v${version}" = "${GITHUB_REF_NAME}"
+      - name: Check code and generated catalog
+        run: npm run check
 
-      - name: Package VSIX
-        run: |
-          version="$(node -p "require('./package.json').version")"
-          npx @vscode/vsce package --no-dependencies --out "azure-pipelines-field-guide-${version}.vsix"
+      - name: Build extension
+        run: npm run build
 
-      - name: Upload VSIX artifact
+      - name: Upload dist artifact
         uses: actions/upload-artifact@v7
         with:
-          name: azure-pipelines-field-guide-vsix
-          path: '*.vsix'
+          name: dist-build
+          path: dist/
+          retention-days: 7
 
-      - name: Create GitHub Release and attach VSIX
-        if: github.event_name == 'push'
+  test:
+    name: Test extension
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: dist-build
+          path: dist/
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run Extension Host integration tests
+        run: xvfb-run -a npm run test:integration
         env:
-          GH_TOKEN: ${{ github.token }}
+          VSCODE_DISABLE_CRASH_REPORTER: true
+          NODE_NO_WARNINGS: 1
+
+  release:
+    name: Release to Visual Studio Marketplace
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref_name, 'v')
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install VSCE
+        run: npm install --global @vscode/vsce
+
+      - name: Verify package version
+        shell: bash
         run: |
-          gh release create "${GITHUB_REF_NAME}" *.vsix \
-            --title "Azure Pipelines Field Guide ${GITHUB_REF_NAME}" \
-            --generate-notes
+          version="$(node -p "require('./package.json').version")"
+          tag_version="${GITHUB_REF_NAME#v}"
+          test "${tag_version}" = "${version}"
+
+      - name: Azure Login with Workload Identity Federation
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Update changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          reverseOrder: true
+          excludeTypes: docs, style, refactor, test, ci, dev, chore, revert
+          excludeScopes: dev, test, release
+          useGitmojis: false
+
+      - name: Publish to Visual Studio Marketplace
+        shell: bash
+        run: |
+          publish_args=(--azure-credential)
+          if [[ "${GITHUB_REF_NAME}" == *-preview ]]; then
+            publish_args+=(--pre-release)
+          fi
+          vsce publish "${publish_args[@]}"
+
+      - name: Find VSIX package
+        id: vsix
+        shell: bash
+        run: |
+          vsix_file="$(find . -maxdepth 1 -type f -name '*.vsix' -print -quit)"
+          test -n "${vsix_file}"
+          echo "filename=${vsix_file#./}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ steps.vsix.outputs.filename }}
+          body: ${{ steps.changelog.outputs.changes }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-preview') }}
+          generate_release_notes: false
+
+      - name: Create release-files pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ github.token }}
+          commit-message: 'chore(release): Release ${{ github.ref_name }}'
+          title: 'chore(release): Update files for ${{ github.ref_name }}'
+          body: 'Automatic update of files for release ${{ github.ref_name }}.'
+          labels: release
+          base: main
+          branch: release-${{ github.ref_name }}
