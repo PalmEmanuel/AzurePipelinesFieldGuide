@@ -13,7 +13,7 @@ extension activation
   │                       └─ predefined-variable catalog
   ├─ hover provider ──────┴─ shared variable model
   ├─ semantic-token provider ─ variable-reference parser
-  ├─ variable catalog tree view ─ predefined-variable catalog
+  ├─ variable catalog webview ─ predefined-variable catalog
   ├─ shared case-insensitive variable lookup
   └─ invalid-syntax diagnostics + Quick Fix ─ expression-context parser
 ```
@@ -23,7 +23,7 @@ extension activation
 - `src/catalog/` contains static, reviewable Azure Pipelines reference data. It has no VS Code dependency.
 - `src/language/` contains pure functions for recognizing supported expression syntax and discovering local declarations. Pure functions keep edge cases inexpensive to unit test.
 - `src/language/sourceText.ts` provides offset-preserving YAML comment masking and document-aware multiline expression context detection.
-- `src/providers/` adapts the language model to VS Code's completion, hover, semantic token, diagnostics, code action, and tree view APIs.
+- `src/providers/` adapts the language model to VS Code's completion, hover, semantic token, diagnostics, code action, and webview APIs.
 - `src/extension.ts` is the composition root. It registers providers only against `{ language: 'azure-pipelines' }`.
 - `src/test/unit/` verifies pure language behavior.
 - `src/test/integration/` verifies activation, official language ownership, and completion results inside an Extension Host.
@@ -34,15 +34,15 @@ The manifest declares `ms-azure-devops.azure-pipelines` in `extensionDependencie
 
 ## Activation and registration
 
-`src/extension.ts` is the composition root. On activation it creates the diagnostics collection and variable-catalog tree provider, then registers all language features against the selector `{ language: 'azure-pipelines', scheme: '*' }`:
+`src/extension.ts` is the composition root. On activation it creates the diagnostics collection and variable-catalog webview provider, then registers all language features against the selector `{ language: 'azure-pipelines', scheme: '*' }`:
 
 - Completion provider, triggered after `.`, `(`, `'`, and `"`.
 - Hover provider.
 - Semantic-token provider using the `variable` legend with readonly/default-library modifiers for predefined variables.
 - Code-action provider for syntax diagnostics and Quick Fixes.
-- Explorer tree view provider for the predefined-variable catalog.
+- Explorer webview provider for the predefined-variable catalog.
 
-The extension also contributes browse, refresh, and variable-syntax copy commands. Copy commands are exposed through the variable item's context menu; property syntax is offered only for simple variable names. All registrations are added to the extension context for disposal.
+The extension contributes a browse command. The predefined-variable catalog is rendered in a custom Explorer webview, which provides wrapped descriptions, filtering, copy buttons, and a dynamic right-click menu whose labels contain the selected variable's exact syntax. Copy actions are handled as webview messages rather than per-variable command contributions. All registrations are added to the extension context for disposal.
 
 ## Completion model
 
@@ -71,7 +71,7 @@ Predefined-variable presentations include the conventional environment-variable 
 
 The syntax diagnostics provider only warns for clear malformed index references in expression contexts, such as `variables[Build.SourceBranch]`. It also checks casing inside expression references, where the expression engine may require the documented spelling. Macro references remain case-insensitive and do not receive casing warnings. Bare text like `Build.` is ignored.
 
-The variable catalog is exposed through an Explorer tree view grouped by namespace. Each variable expands once into a single read-only Markdown details item containing the official Microsoft Learn link, environment-variable equivalent, template availability, syntax examples, and full description. The view is backed entirely by the bundled catalog and never performs network retrieval at runtime.
+The variable catalog is exposed through a custom Explorer webview as one compact alphabetical list. Each variable is an expandable HTML details block with a wrapped full description, macro/expression/property and environment-variable syntax rows, one copy button that opens the same dynamic context menu as right-click, environment-variable metadata, template availability, and an official Microsoft Learn button. The webview also provides a non-sticky search field; its copy and documentation actions are validated in the extension host before they are performed. The view is backed entirely by the bundled catalog and never performs network retrieval at runtime.
 
 There are three diagnostic codes:
 
@@ -132,7 +132,7 @@ All settings are resource-scoped under `azurePipelinesFieldGuide`:
 - `diagnostics.invalidVariableSyntax.enabled` controls missing-quote and invalid-property diagnostics.
 - `diagnostics.expressionVariableCasing.enabled` controls expression casing diagnostics.
 
-The catalog tree view is always local and does not have a network or authentication setting.
+The catalog webview is always local and does not have a network or authentication setting.
 
 ## Tests and release automation
 

@@ -43,13 +43,7 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onLanguage:azure-pipelines",
-    "onView:azurePipelinesFieldGuide.variables",
-    "onCommand:azurePipelinesFieldGuide.browseVariables",
-    "onCommand:azurePipelinesFieldGuide.refreshVariables",
-    "onCommand:azurePipelinesFieldGuide.copyMacroSyntax",
-    "onCommand:azurePipelinesFieldGuide.copyExpressionSyntax",
-    "onCommand:azurePipelinesFieldGuide.copyPropertySyntax"
+    "onLanguage:azure-pipelines"
   ],
   "extensionDependencies": [
     "ms-azure-devops.azure-pipelines"
@@ -68,73 +62,14 @@
         "command": "azurePipelinesFieldGuide.browseVariables",
         "title": "Azure Pipelines Field Guide: Browse Predefined Variables",
         "icon": "$(symbol-variable)"
-      },
-      {
-        "command": "azurePipelinesFieldGuide.refreshVariables",
-        "title": "Azure Pipelines Field Guide: Refresh Variables",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "azurePipelinesFieldGuide.copyMacroSyntax",
-        "title": "Azure Pipelines Field Guide: Copy Macro Syntax",
-        "icon": "$(copy)"
-      },
-      {
-        "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
-        "title": "Azure Pipelines Field Guide: Copy Expression Syntax",
-        "icon": "$(copy)"
-      },
-      {
-        "command": "azurePipelinesFieldGuide.copyPropertySyntax",
-        "title": "Azure Pipelines Field Guide: Copy Property Syntax",
-        "icon": "$(copy)"
       }
     ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "azurePipelinesFieldGuide.copyMacroSyntax",
-          "when": "false"
-        },
-        {
-          "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
-          "when": "false"
-        },
-        {
-          "command": "azurePipelinesFieldGuide.copyPropertySyntax",
-          "when": "false"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "azurePipelinesFieldGuide.copyMacroSyntax",
-          "when": "view == azurePipelinesFieldGuide.variables && (viewItem == azurePipelinesVariable || viewItem == azurePipelinesVariable.simple)",
-          "group": "copy@1"
-        },
-        {
-          "command": "azurePipelinesFieldGuide.copyExpressionSyntax",
-          "when": "view == azurePipelinesFieldGuide.variables && (viewItem == azurePipelinesVariable || viewItem == azurePipelinesVariable.simple)",
-          "group": "copy@2"
-        },
-        {
-          "command": "azurePipelinesFieldGuide.copyPropertySyntax",
-          "when": "view == azurePipelinesFieldGuide.variables && viewItem == azurePipelinesVariable.simple",
-          "group": "copy@3"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "azurePipelinesFieldGuide.refreshVariables",
-          "when": "view == azurePipelinesFieldGuide.variables",
-          "group": "navigation"
-        }
-      ]
-    },
     "views": {
       "explorer": [
         {
           "id": "azurePipelinesFieldGuide.variables",
           "name": "Azure Pipelines Variables",
+          "type": "webview",
           "icon": "AzurePipelinesFieldGuide.png"
         }
       ]
