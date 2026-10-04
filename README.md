@@ -1,8 +1,8 @@
 # Azure Pipelines Field Guide
 
-<p align="center">
-  <img src="assets/AzurePipelinesFieldGuide.png" width="256" alt="Azure Pipelines Field Guide logo">
-</p>
+[![AzurePipelinesFieldGuide]][AzurePipelinesFieldGuideMarketplace]
+
+<img src="assets/AzurePipelinesFieldGuide.png" width="256" alt="Azure Pipelines Field Guide logo">
 
 Azure Pipelines Field Guide is a Visual Studio Code extension that adds context-aware IntelliSense, hover documentation, semantic highlighting, and syntax diagnostics for variables in Azure Pipelines YAML files.
 
@@ -165,3 +165,7 @@ This project addresses long-standing requests in the official extension for [bui
 ## License
 
 [MIT](LICENSE)
+
+<!-- References -->
+[AzurePipelinesFieldGuideMarketplace]: https://marketplace.visualstudio.com/items?itemName=PalmEmanuel.azure-pipelines-field-guide-vscode
+[AzurePipelinesFieldGuide]: https://flat.badgen.net/vs-marketplace/v/PalmEmanuel.azure-pipelines-field-guide-vscode?label=Azure%20Pipelines%20Field%20Guide
