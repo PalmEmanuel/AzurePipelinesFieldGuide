@@ -118,8 +118,21 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
+      - name: Detect previous release tag
+        id: previous-tag
+        shell: bash
+        run: |
+          previous_tag="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+          if [[ -n "${previous_tag}" ]]; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+            echo "tag=${previous_tag}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Update changelog
         id: changelog
+        if: steps.previous-tag.outputs.exists == 'true'
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
@@ -128,6 +141,36 @@ jobs:
           excludeTypes: docs, style, refactor, test, ci, dev, chore, revert
           excludeScopes: dev, test, release
           useGitmojis: false
+
+      - name: Prepare initial release changelog
+        id: initial-changelog
+        if: steps.previous-tag.outputs.exists != 'true'
+        shell: bash
+        run: |
+          release_date="$(date -u +%Y-%m-%d)"
+          release_body="$(awk '
+            /^## \[Unreleased\]/ { in_unreleased=1; next }
+            /^## / && in_unreleased { exit }
+            in_unreleased { print }
+          ' CHANGELOG.md)"
+
+          {
+            echo 'changes<<CHANGELOG_EOF'
+            printf '%s\n' "${release_body}"
+            echo 'CHANGELOG_EOF'
+          } >> "${GITHUB_OUTPUT}"
+
+          temporary_changelog="$(mktemp)"
+          awk -v tag="${GITHUB_REF_NAME}" -v release_date="${release_date}" '
+            /^## \[Unreleased\]/ {
+              print
+              print ""
+              print "## [" tag "] - " release_date
+              next
+            }
+            { print }
+          ' CHANGELOG.md > "${temporary_changelog}"
+          mv "${temporary_changelog}" CHANGELOG.md
 
       - name: Publish to Visual Studio Marketplace
         shell: bash
@@ -150,7 +193,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: ${{ steps.vsix.outputs.filename }}
-          body: ${{ steps.changelog.outputs.changes }}
+          body: ${{ steps.changelog.outputs.changes || steps.initial-changelog.outputs.changes }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-preview') }}
           generate_release_notes: false

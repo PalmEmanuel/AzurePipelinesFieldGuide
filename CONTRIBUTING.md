@@ -58,6 +58,8 @@ Releases should update the version in `package.json`, review the README, add rel
 
 The release workflow requires the repository secrets `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`. The Azure identity must be configured for the Marketplace publishing flow used by `vsce --azure-credential`, and the GitHub Actions workflow must be allowed to request an OIDC token.
 
+For the first release, there is no previous tag for the changelog action to compare against. The workflow automatically uses the current `Unreleased` section as the release notes and promotes it to the tagged release entry. Later releases use the normal previous-tag comparison.
+
 ## Reporting issues
 
 Include the VS Code version, Field Guide version, official Azure Pipelines extension version, language mode shown in the status bar, a minimal YAML example, and the expected completion or hover behavior. For diagnostics, include whether the expression is inline or multiline and whether it is a `condition`, `${{ }}`, or `$[ ]` expression. Remove secrets and organization-specific values first.
