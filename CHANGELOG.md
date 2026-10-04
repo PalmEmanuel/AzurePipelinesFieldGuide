@@ -19,6 +19,7 @@ All notable changes to Azure Pipelines Field Guide are documented here.
 - Source-backed predefined-variable retrieval script with recursive Markdown include parsing.
 - Generated descriptions, explicit template-availability metadata, and section-anchored documentation URLs.
 - Unit tests, catalog parser tests, Extension Host integration tests, CI validation, and tag-based VSIX release packaging.
+- Marketplace release automation with Azure Workload Identity Federation, GitHub Release attachments, and release-file pull requests.
 
 ### Diagnostics
 

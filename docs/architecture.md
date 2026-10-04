@@ -138,7 +138,7 @@ The catalog webview is always local and does not have a network or authenticatio
 
 Pure language behavior is covered in `src/test/unit/`, including multiline expression context, comment masking, variable references, invalid syntax, and document-variable discovery. `src/test/integration/extension.test.ts` runs in a real Extension Host with Microsoft's language extension and verifies language ownership, completion, hover, highlighting, diagnostics, and Quick Fix edits.
 
-The catalog parser has offline Node tests under `scripts/test/`. The CI workflow runs build, lint, type checking, generator tests, and Extension Host integration tests. The release workflow runs on `v*` tags, verifies the tag matches `package.json`, packages a VSIX, uploads it as an artifact, and attaches it to a GitHub Release. Marketplace publishing is intentionally not configured until repository identities and secrets are available.
+The catalog parser has offline Node tests under `scripts/test/`. The CI workflow runs build, lint, type checking, generator tests, and Extension Host integration tests. The release workflow runs the same build and test gates on `v*` tags, verifies the tag matches `package.json`, publishes through `vsce --azure-credential`, attaches the generated VSIX to a GitHub Release, and opens a pull request for release-file changes. Marketplace publishing uses the repository's `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` secrets with GitHub OIDC.
 
 ## Security and performance
 

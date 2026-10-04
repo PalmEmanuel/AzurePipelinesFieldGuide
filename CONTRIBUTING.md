@@ -54,7 +54,9 @@ The generator's offline parser tests live under `scripts/test/`. Add or update a
 
 ## Release preparation
 
-Releases should update the version in `package.json`, review the README, add release notes, and push a matching `v<version>` tag. The release workflow packages the extension and attaches the VSIX to a GitHub Release. Marketplace publishing will be enabled after repository identities and secrets are configured.
+Releases should update the version in `package.json`, review the README, add release notes, and push a matching `v<version>` tag. The release workflow runs the build and test jobs, publishes the extension to the Visual Studio Marketplace through Azure Workload Identity Federation, attaches the VSIX to a GitHub Release, and opens a pull request for generated release-file changes.
+
+The release workflow requires the repository secrets `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`. The Azure identity must be configured for the Marketplace publishing flow used by `vsce --azure-credential`, and the GitHub Actions workflow must be allowed to request an OIDC token.
 
 ## Reporting issues
 
