@@ -129,22 +129,24 @@ jobs:
           excludeScopes: dev, test, release
           useGitmojis: false
 
-      - name: Publish to Visual Studio Marketplace
-        shell: bash
-        run: |
-          publish_args=(--azure-credential)
-          if [[ "${GITHUB_REF_NAME}" == *-preview ]]; then
-            publish_args+=(--pre-release)
-          fi
-          vsce publish "${publish_args[@]}"
-
-      - name: Find VSIX package
+      - name: Package VSIX
         id: vsix
         shell: bash
         run: |
-          vsix_file="$(find . -maxdepth 1 -type f -name '*.vsix' -print -quit)"
-          test -n "${vsix_file}"
-          echo "filename=${vsix_file#./}" >> "${GITHUB_OUTPUT}"
+          version="$(node -p "require('./package.json').version")"
+          vsix_file="azure-pipelines-field-guide-${version}.vsix"
+          package_args=(--no-dependencies --out "${vsix_file}")
+          if [[ "${GITHUB_REF_NAME}" == *-preview ]]; then
+            package_args+=(--pre-release)
+          fi
+          vsce package "${package_args[@]}"
+          echo "filename=${vsix_file}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish to Visual Studio Marketplace
+        shell: bash
+        run: |
+          publish_args=(--azure-credential --packagePath "${{ steps.vsix.outputs.filename }}")
+          vsce publish "${publish_args[@]}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
