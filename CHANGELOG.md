@@ -2,7 +2,9 @@
 
 All notable changes to Azure Pipelines Field Guide are documented here.
 
-## [Unreleased]
+Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this file.
+
+## [v0.1.0] - 2026-10-04
 
 ### Added
 
