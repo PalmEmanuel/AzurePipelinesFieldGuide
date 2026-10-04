@@ -8,9 +8,9 @@ import {
   variableSemanticTokensLegend,
 } from './providers/variableSemanticTokensProvider';
 import {
-  VariableCatalogTreeProvider,
-  type VariableCatalogNode,
-} from './providers/variableCatalogTreeProvider';
+  VARIABLE_CATALOG_VIEW_TYPE,
+  VariableCatalogWebviewProvider,
+} from './providers/variableCatalogWebviewProvider';
 
 const AZURE_PIPELINES_SELECTOR: vscode.DocumentSelector = {
   language: 'azure-pipelines',
@@ -19,36 +19,18 @@ const AZURE_PIPELINES_SELECTOR: vscode.DocumentSelector = {
 
 export function activate(context: vscode.ExtensionContext): void {
   const invalidVariableSyntaxDiagnostics = new InvalidVariableSyntaxDiagnostics();
-  const variableCatalog = new VariableCatalogTreeProvider();
+  const variableCatalog = new VariableCatalogWebviewProvider();
 
   context.subscriptions.push(
     invalidVariableSyntaxDiagnostics,
     variableCatalog,
-    vscode.window.registerTreeDataProvider(
-      'azurePipelinesFieldGuide.variables',
+    vscode.window.registerWebviewViewProvider(
+      VARIABLE_CATALOG_VIEW_TYPE,
       variableCatalog,
     ),
     vscode.commands.registerCommand(
       'azurePipelinesFieldGuide.browseVariables',
       () => vscode.commands.executeCommand('workbench.view.explorer'),
-    ),
-    vscode.commands.registerCommand(
-      'azurePipelinesFieldGuide.refreshVariables',
-      () => variableCatalog.refresh(),
-    ),
-    vscode.commands.registerCommand(
-      'azurePipelinesFieldGuide.copyMacroSyntax',
-      (node: VariableCatalogNode) => copyVariableSyntax(node, (name) => `$(${name})`),
-    ),
-    vscode.commands.registerCommand(
-      'azurePipelinesFieldGuide.copyExpressionSyntax',
-      (node: VariableCatalogNode) =>
-        copyVariableSyntax(node, (name) => `variables['${name}']`),
-    ),
-    vscode.commands.registerCommand(
-      'azurePipelinesFieldGuide.copyPropertySyntax',
-      (node: VariableCatalogNode) =>
-        copyVariableSyntax(node, (name) => `variables.${name}`),
     ),
     vscode.languages.registerCompletionItemProvider(
       AZURE_PIPELINES_SELECTOR,
@@ -77,14 +59,4 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
   // Providers are disposed through the extension context.
-}
-
-async function copyVariableSyntax(
-  node: VariableCatalogNode,
-  format: (name: string) => string,
-): Promise<void> {
-  if (node?.kind !== 'variable') {
-    return;
-  }
-  await vscode.env.clipboard.writeText(format(node.variable.name));
 }

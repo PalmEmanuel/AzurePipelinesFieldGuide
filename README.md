@@ -99,11 +99,11 @@ Comments are ignored by the variable scanner, so examples or commands in YAML co
 
 ### Variable catalog sidebar
 
-Open the Explorer sidebar and expand **Azure Pipelines Variables** to browse the bundled predefined-variable catalog grouped by namespace. Expand a variable once to reveal one full Markdown details item containing its description, syntax examples, environment-variable equivalent, template availability, and clickable official documentation link.
+Open the Explorer sidebar and open **Azure Pipelines Variables** to browse the complete bundled predefined-variable catalog in one compact alphabetical list. Expand a variable to reveal its wrapped full description, syntax examples, environment-variable equivalent, template availability, and official documentation link. The view includes filtering, a copy button, and a dynamic right-click menu with the exact syntax, such as `Copy as "$(Build.BuildId)"`, `Copy as "variables['Build.BuildId']"`, and `Copy as "BUILD_BUILDID"` for environment variables.
 
-Right-click a variable to copy its macro syntax, expression syntax, or—when valid—simple property syntax.
+Right-click a variable to copy its macro syntax, expression syntax, or—when valid—simple property syntax. The webview builds these actions dynamically from the selected variable, so there are no per-variable command contributions in `package.json`.
 
-The same view is available from the Command Palette with **Azure Pipelines Field Guide: Browse Predefined Variables**. Use the refresh button in the view title when the catalog changes after an extension update.
+The same view is available from the Command Palette with **Azure Pipelines Field Guide: Browse Predefined Variables**. The catalog is bundled with the extension and is updated by CI when the Microsoft documentation source changes.
 
 ## Settings
 

@@ -44,7 +44,7 @@ Add unit tests for parsing and catalog logic. Add integration tests when behavio
 - Regenerate source-backed variables with `npm run update:variables`; never hand-edit the generated catalog.
 - Keep user-facing behavior documented in `README.md`.
 - Add release notes to `CHANGELOG.md` for every released version.
-- Keep the variable catalog sidebar read-only and local; it must not fetch documentation at runtime.
+- Keep the variable catalog webview read-only and local; it must not fetch documentation at runtime. Validate all webview messages against the bundled catalog before copying syntax or opening documentation.
 
 ## Catalog changes
 

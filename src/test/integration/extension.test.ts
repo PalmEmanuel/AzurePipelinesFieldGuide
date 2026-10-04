@@ -1,6 +1,7 @@
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
-import { VariableCatalogTreeProvider } from '../../providers/variableCatalogTreeProvider';
+import { predefinedVariables } from '../../catalog/predefinedVariables';
+import { renderVariableCatalogBody } from '../../providers/variableCatalogWebviewProvider';
 
 suite('Azure Pipelines Field Guide integration', () => {
   let document: vscode.TextDocument;
@@ -26,37 +27,41 @@ suite('Azure Pipelines Field Guide integration', () => {
     assert.equal(document.languageId, 'azure-pipelines');
   });
 
-  test('provides an expandable catalog item with one Markdown details block', () => {
-    const provider = new VariableCatalogTreeProvider();
-    const buildNamespace = provider
-      .getChildren()
-      .find((node) => node.kind === 'namespace' && node.name === 'Build');
-    assert.ok(buildNamespace);
-
-    const buildVariable = provider
-      .getChildren(buildNamespace)
-      .find((node) => node.kind === 'variable' && node.variable.name === 'Build.BuildId');
-    assert.ok(buildVariable);
-
-    const variableItem = provider.getTreeItem(buildVariable);
-    assert.equal(variableItem.collapsibleState, vscode.TreeItemCollapsibleState.Collapsed);
-    const details = provider.getChildren(buildVariable);
-    assert.equal(details.length, 1);
-
-    const detailsItem = provider.getTreeItem(details[0]!);
-    assert.equal(detailsItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
-    assert.ok(detailsItem.tooltip instanceof vscode.MarkdownString);
-    assert.match(detailsItem.tooltip.value, /ID of the record for the completed build/);
-    assert.match(detailsItem.tooltip.value, /Environment variable: `BUILD_BUILDID`/);
-    assert.match(detailsItem.tooltip.value, /#build-variables/);
-    assert.equal(detailsItem.command?.command, 'vscode.open');
+  test('provides a custom catalog webview with full variable details', () => {
+    const catalogHtml = renderVariableCatalogBody(predefinedVariables);
+    assert.match(catalogHtml, /Build\.BuildId/);
+    assert.match(catalogHtml, /ID of the record for the completed build/);
+    assert.match(catalogHtml, /\$\(Build\.BuildId\)/);
+    assert.match(catalogHtml, /BUILD_BUILDID/);
+    assert.match(catalogHtml, /data-syntax="environment"/);
+    assert.match(catalogHtml, /data-action="openCopyMenu"/);
+    assert.doesNotMatch(catalogHtml, /data-action="copy"/);
+    assert.doesNotMatch(catalogHtml, /class="namespace"/);
+    assert.match(catalogHtml, /Open official documentation/);
 
     const packageJson = extension.packageJSON as {
-      contributes?: { menus?: { 'view/item/context'?: unknown[] } };
+      activationEvents?: string[];
+      contributes?: {
+        commands?: Array<{ command: string; title: string; icon?: string }>;
+        views?: {
+          explorer?: Array<{ id: string; name: string; type?: string; icon?: string }>;
+        };
+      };
     };
-    const contextMenus = packageJson.contributes?.menus?.['view/item/context'];
-    assert.ok(contextMenus);
-    assert.equal(contextMenus.length, 3);
+    assert.equal(packageJson.activationEvents, undefined);
+    const catalogView = packageJson.contributes?.views?.explorer?.find(
+      ({ id }) => id === 'azurePipelinesFieldGuide.variables',
+    );
+    assert.deepEqual(catalogView, {
+      id: 'azurePipelinesFieldGuide.variables',
+      name: 'Azure Pipelines Variables',
+      type: 'webview',
+      icon: 'AzurePipelinesFieldGuide.png',
+    });
+    assert.equal(
+      packageJson.contributes?.commands?.some(({ command }) => command.includes('.copy.')),
+      false,
+    );
   });
 
   test('offers predefined variables after a namespace prefix', async () => {
