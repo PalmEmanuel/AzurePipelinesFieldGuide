@@ -2,7 +2,7 @@
   "name": "azure-pipelines-field-guide-vscode",
   "displayName": "Azure Pipelines Field Guide",
   "description": "Extended IntelliSense for Azure Pipelines YAML with autocompletion for variables and more.",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "publisher": "PalmEmanuel",
   "author": {
     "name": "Emanuel Palm",
