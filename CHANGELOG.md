@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this f
 
 ## [Unreleased]
 
+## [v1.1.0] - 2026-10-07
+
 ### Added
 
 - IntelliSense for parameters declared in the current YAML document inside valid `${{ parameters.name }}` template expressions.
