@@ -93,6 +93,18 @@
           ],
           "variable": [
             "variable.other.readwrite.azure-pipelines"
+          ],
+          "parameter.readonly": [
+            "variable.parameter.azure-pipelines"
+          ],
+          "string": [
+            "string.quoted.azure-pipelines"
+          ],
+          "number": [
+            "constant.numeric.azure-pipelines"
+          ],
+          "keyword": [
+            "constant.language.boolean.azure-pipelines"
           ]
         }
       }
@@ -104,7 +116,7 @@
           "type": "boolean",
           "default": true,
           "scope": "resource",
-          "description": "Show predefined and document-defined Azure Pipelines variable completions."
+          "description": "Show Azure Pipelines variable and template parameter completions."
         },
         "azurePipelinesFieldGuide.hovers.enabled": {
           "type": "boolean",
@@ -150,6 +162,9 @@
     "check:variables": "node scripts/update-predefined-variables.mjs --check",
     "test:integration": "npm run build && npm run compile-tests && vscode-test --config .vscode-test.mjs",
     "vsix": "npm run package && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

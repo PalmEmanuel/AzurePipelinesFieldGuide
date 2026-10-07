@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ParameterCompletionProvider } from './providers/parameterCompletionProvider';
 import { VariableCompletionProvider } from './providers/variableCompletionProvider';
 import { VariableHoverProvider } from './providers/variableHoverProvider';
 import { InvalidVariableSyntaxCodeActionProvider } from './providers/invalidVariableSyntaxCodeActionProvider';
@@ -39,6 +40,15 @@ export function activate(context: vscode.ExtensionContext): void {
       '(',
       "'",
       '"',
+    ),
+    vscode.languages.registerCompletionItemProvider(
+      AZURE_PIPELINES_SELECTOR,
+      new ParameterCompletionProvider(),
+      '.',
+      "'",
+      '"',
+      ' ',
+      ',',
     ),
     vscode.languages.registerHoverProvider(
       AZURE_PIPELINES_SELECTOR,
