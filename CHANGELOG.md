@@ -4,6 +4,17 @@ All notable changes to Azure Pipelines Field Guide are documented here.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this file.
 
+## [v1.1.0] - 2026-10-07
+### New Features
+- [`327df8f`](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/commit/327df8f907243f355bcafda39363601285f9dcfe) - Added support for parameters *(PR [#12](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/pull/12) by [@PalmEmanuel](https://github.com/PalmEmanuel))*
+
+### Bug Fixes
+- [`1f896b8`](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/commit/1f896b82a8501baab080d179c5c03e5f8038938a) - update release workflow to use tag version for packaging and improve release preparation instructions *(commit by [@PalmEmanuel](https://github.com/PalmEmanuel))*
+- [`5ed254b`](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/commit/5ed254b2dcb6717b0e4de40400eff82cce38e4f3) - revert version number to 1.0.0 in package.json *(commit by [@PalmEmanuel](https://github.com/PalmEmanuel))*
+- [`d70064f`](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/commit/d70064f43d4d9cbb65f755beb6e3dddcd709809c) - update version to 1.1.0 in package.json *(commit by [@PalmEmanuel](https://github.com/PalmEmanuel))*
+- [`6838cb0`](https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/commit/6838cb06fa18ddc69e919e53cc2ec12725735fe0) - remove outdated version entry from changelog *(commit by [@PalmEmanuel](https://github.com/PalmEmanuel))*
+
+
 ## [Unreleased]
 
 ### Added
@@ -27,3 +38,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this f
 - Expandable variable entries with macro, expression, property, and environment-variable syntax rows, copy buttons, and a dynamic right-click menu containing the exact syntax for the selected variable.
 - Command Palette command to browse predefined variables.
 - Generated descriptions, explicit template-availability metadata, and section-anchored documentation URLs.
+[v1.1.0]: https://github.com/PalmEmanuel/AzurePipelinesFieldGuide/compare/v1.0.0...v1.1.0
