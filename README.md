@@ -40,6 +40,27 @@ Bare text such as `Build.` or `displayName: Build.` does not trigger variable co
 
 Predefined Microsoft variables and variables declared in the current YAML document are included. Document variables support both mapping and list declaration forms and are ranked above predefined variables when names collide.
 
+### Template parameter IntelliSense
+
+Parameters declared in the root `parameters:` list are suggested by name inside Azure Pipelines compile-time template expressions:
+
+```yaml
+parameters:
+- name: buildConfiguration
+  type: string
+  default: Release
+  values: [Debug, Release]
+
+steps:
+- script: echo ${{ parameters.buildConfiguration }}
+```
+
+Parameter completion is limited to `parameters.<name>` inside `${{ ... }}` expressions, where Azure Pipelines expands parameters. It does not suggest parameters in macro syntax, `$[ ... ]` runtime expressions, variable references, or string literals. Only declarations in the current file are considered; parameters from referenced templates are not resolved.
+
+For scalar parameters with a declared `values:` list, allowed values are also suggested in their `default:` field and in template-expression comparisons such as `${{ eq(parameters.buildConfiguration, 'Release') }}`. Supported functions are `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`, and `notIn`, with the parameter as the first argument. Both inline and block `values:` lists are supported for `string`, `number`, and `boolean` parameters. Suggestions insert properly quoted YAML defaults or Azure expression literals (single-quoted strings with doubled apostrophes; unquoted numbers and booleans). Existing scalar text and closing quotes are replaced, not duplicated.
+
+Value suggestions are limited to direct scalar literals and valid current-document declarations. Complex or dynamically generated values, nested object fields, runtime expressions, and inputs to referenced templates are not resolved.
+
 ### Multiline expressions and conditions
 
 The same features work in multiline template/runtime expressions and block-scalar conditions:
@@ -69,6 +90,8 @@ The editor UI does not show links to the GitHub documentation source.
 ### Highlighting
 
 Recognized predefined variables and current-document variables receive semantic highlighting when used in valid macro, index, property, template, runtime, or condition syntax. Unknown names and bare text are not highlighted as known variables.
+
+Declared parameter names receive readonly parameter highlighting in valid `${{ parameters.name }}` references. Allowed values in `values:` lists, matching defaults, and supported compile-time comparisons receive string, number, or boolean highlighting. Comments, unknown parameters, runtime parameter references, and unsupported value contexts are excluded. Colors depend on your theme and require semantic highlighting to be enabled in VS Code.
 
 ### Diagnostics and Quick Fixes
 
@@ -153,7 +176,8 @@ See [Architecture](docs/architecture.md) for design boundaries and [Contributing
 ## Known boundaries
 
 - The extension analyzes the open file only. Variable groups, linked templates, pipeline UI variables, and runtime-created output variables are not resolved.
-- The predefined catalog does not yet include `dependencies`, `stageDependencies`, `parameters`, or other Azure Pipelines expression contexts.
+- Parameter completion discovers root-level declarations in the current file; declarations in referenced templates are not resolved.
+- The predefined-variable catalog does not include `dependencies`, `stageDependencies`, or other Azure Pipelines expression contexts.
 - Template availability describes Microsoft's documented template-scope flag; actual availability can still depend on pipeline scope, trigger, and job context.
 - Dynamically generated variable names are skipped because their final names cannot be known statically.
 - The catalog sidebar contains the bundled predefined catalog; it does not yet show variables from linked files or variable groups.

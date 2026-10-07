@@ -118,6 +118,69 @@ suite('Azure Pipelines Field Guide integration', () => {
     );
   });
 
+  test('offers only declared parameters in valid template-expression syntax', async () => {
+    const parameterDocument = await vscode.workspace.openTextDocument({
+      language: 'azure-pipelines',
+      content: `parameters:
+- name: releaseStage
+  type: string
+- name: buildConfiguration
+  type: string
+steps:
+- script: echo \${{ parameters.releaseS }}
+- script: echo parameters.releaseS
+- script: echo $[ parameters.releaseS ]
+- script: echo \${{ variables.parameters.releaseS }}
+- script: echo \${{ eq('parameters.releaseS', 'other') }}
+`,
+    });
+
+    const getCompletions = async (
+      lineNumber: number,
+      marker: string,
+    ): Promise<vscode.CompletionList> => {
+      const line = parameterDocument.lineAt(lineNumber).text;
+      return vscode.commands.executeCommand<vscode.CompletionList>(
+        'vscode.executeCompletionItemProvider',
+        parameterDocument.uri,
+        new vscode.Position(lineNumber, line.indexOf(marker) + marker.length),
+      );
+    };
+
+    const validCompletions = await getCompletions(6, 'releaseS');
+    const releaseStage = validCompletions.items.find(
+      (item) => completionLabel(item) === 'releaseStage',
+    );
+    const parameterItems = validCompletions.items.filter(
+      (item) => item.detail === 'Azure Pipelines template parameter · Current document',
+    );
+    assert.ok(releaseStage);
+    assert.ok(
+      parameterItems.every((item) => completionLabel(item).startsWith('releaseS')),
+    );
+    assert.equal(
+      releaseStage.detail,
+      'Azure Pipelines template parameter · Current document',
+    );
+    assert.match(
+      (releaseStage.documentation as vscode.MarkdownString).value,
+      /\$\{\{ parameters\.releaseStage \}\}/,
+    );
+
+    for (const lineNumber of [7, 8, 9, 10]) {
+      const completions = await getCompletions(lineNumber, 'releaseS');
+      assert.equal(
+        completions.items.some(
+          (item) =>
+            item.detail === 'Azure Pipelines template parameter · Current document' &&
+            completionLabel(item) === 'releaseStage',
+        ),
+        false,
+        `Unexpected parameter completion on line ${lineNumber + 1}`,
+      );
+    }
+  });
+
   test('offers simple document variables through property syntax', async () => {
     const line = document.lineAt(16).text;
     const position = new vscode.Position(16, line.indexOf(','));
@@ -129,6 +192,58 @@ suite('Azure Pipelines Field Guide integration', () => {
 
     assert.ok(completions.items.some((item) => completionLabel(item) === 'buildConfiguration'));
     assert.ok(completions.items.every((item) => /^[A-Za-z_][A-Za-z0-9_]*$/u.test(completionLabel(item))));
+  });
+
+  test('offers typed allowed values in defaults and compile-time comparisons', async () => {
+    const content = [
+      'parameters:',
+      '- name: configuration',
+      '  type: string',
+      '  default: "Re"',
+      '  values: [Debug, Release]',
+      '- name: enabled',
+      '  type: boolean',
+      '  values: [true, false]',
+      'steps:',
+      "- script: echo ${{ eq(parameters.configuration, 'Re') }}",
+      '- script: echo ${{ eq(parameters.enabled, ) }}',
+      "- script: echo $[ eq(parameters.configuration, 'Re') ]",
+      "# ${{ eq(parameters.configuration, 'Re') }}",
+      '- template: build.yml',
+      '  parameters:',
+      '    default: "Re"',
+    ].join('\n');
+    const valueDocument = await vscode.workspace.openTextDocument({
+      language: 'azure-pipelines', content,
+    });
+    const getItems = async (
+      line: number,
+      marker: string,
+    ): Promise<vscode.CompletionItem[]> => {
+      const lineText = valueDocument.lineAt(line).text;
+      const result = await vscode.commands.executeCommand<vscode.CompletionList>(
+        'vscode.executeCompletionItemProvider',
+        valueDocument.uri,
+        new vscode.Position(line, lineText.indexOf(marker) + marker.length),
+      );
+      return result.items.filter((item) => item.detail?.startsWith('Allowed value for parameter '));
+    };
+
+    const defaultItems = await getItems(3, '"Re');
+    assert.deepEqual(defaultItems.map(completionLabel), ['Release']);
+    assert.equal(defaultItems[0]?.insertText, '"Release"');
+    assert.deepEqual(defaultItems[0]?.range, new vscode.Range(3, 11, 3, 15));
+
+    const expressionItems = await getItems(9, "'Re");
+    assert.deepEqual(expressionItems.map(completionLabel), ['Release']);
+    assert.equal(expressionItems[0]?.insertText, "'Release'");
+
+    const booleans = await getItems(10, 'parameters.enabled, ');
+    assert.deepEqual(booleans.map((item) => item.insertText).sort(), ['false', 'true']);
+
+    for (const line of [11, 12, 15]) {
+      assert.deepEqual(await getItems(line, 'Re'), []);
+    }
   });
 
   test('warns about unquoted variable indexes and offers a quoting quick fix', async () => {
@@ -249,6 +364,65 @@ suite('Azure Pipelines Field Guide integration', () => {
       30,
       'Expected six recognized variable references in valid syntax',
     );
+  });
+
+  test('highlights parameter references and typed values without false positives', async () => {
+    const lines = [
+      'parameters:',
+      '- name: configuration',
+      '  type: string',
+      '  default: Release',
+      '  values: [Debug, Release]',
+      '- name: enabled',
+      '  type: boolean',
+      '  values: [true, false]',
+      '- name: count',
+      '  type: number',
+      '  values: [1, 2]',
+      'steps:',
+      "- script: echo ${{ eq(parameters.configuration, 'Release') }}",
+      '- script: echo ${{ eq(parameters.enabled, true) }}',
+      '- script: echo ${{ eq(parameters.count, 2) }}',
+      "# ${{ eq(parameters.configuration, 'Release') }}",
+      "- script: echo $[ eq(parameters.configuration, 'Release') ]",
+      "- script: echo ${{ 'parameters.configuration' }}",
+      '- script: echo ${{ parameters.unknown }}',
+    ];
+    const parameterDocument = await vscode.workspace.openTextDocument({
+      language: 'azure-pipelines', content: lines.join('\n'),
+    });
+    const legend = await vscode.commands.executeCommand<vscode.SemanticTokensLegend>(
+      'vscode.provideDocumentSemanticTokensLegend', parameterDocument.uri,
+    );
+    const tokens = await vscode.commands.executeCommand<vscode.SemanticTokens>(
+      'vscode.provideDocumentSemanticTokens', parameterDocument.uri,
+    );
+    assert.ok(legend);
+    assert.ok(tokens);
+    const decoded: Array<{ line: number; text: string; type: string; readonly: boolean }> = [];
+    let line = 0;
+    let column = 0;
+    for (let index = 0; index < tokens.data.length; index += 5) {
+      const deltaLine = tokens.data[index] ?? 0;
+      line += deltaLine;
+      column = (deltaLine === 0 ? column : 0) + (tokens.data[index + 1] ?? 0);
+      decoded.push({
+        line,
+        text: (lines[line] ?? '').slice(column, column + (tokens.data[index + 2] ?? 0)),
+        type: legend.tokenTypes[tokens.data[index + 3] ?? 0] ?? '',
+        readonly: ((tokens.data[index + 4] ?? 0) &
+          (1 << legend.tokenModifiers.indexOf('readonly'))) !== 0,
+      });
+    }
+    assert.deepEqual(decoded.filter((token) => token.line >= 12), [
+      { line: 12, text: 'configuration', type: 'parameter', readonly: true },
+      { line: 12, text: "'Release'", type: 'string', readonly: false },
+      { line: 13, text: 'enabled', type: 'parameter', readonly: true },
+      { line: 13, text: 'true', type: 'keyword', readonly: false },
+      { line: 14, text: 'count', type: 'parameter', readonly: true },
+      { line: 14, text: '2', type: 'number', readonly: false },
+    ]);
+    assert.equal(decoded.filter((token) => token.line < 12).length, 7);
   });
 
   test('diagnoses casing inside a multiline condition but ignores comments', () => {

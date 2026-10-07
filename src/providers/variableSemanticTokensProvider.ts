@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 import { predefinedVariablesByName } from '../catalog/predefinedVariables';
 import { collectDocumentVariables } from '../language/documentVariables';
 import { findVariableReferences } from '../language/variableReferences';
+import { findParameterReferences } from '../language/parameterReferences';
+import { findParameterValueReferences } from '../language/parameterValues';
 
 export const variableSemanticTokensLegend = new vscode.SemanticTokensLegend(
-  ['variable'],
+  ['variable', 'parameter', 'string', 'number', 'keyword'],
   ['readonly', 'defaultLibrary'],
 );
 
@@ -15,8 +17,9 @@ export class VariableSemanticTokensProvider
     document: vscode.TextDocument,
   ): vscode.SemanticTokens {
     const builder = new vscode.SemanticTokensBuilder(variableSemanticTokensLegend);
+    const text = document.getText();
     const documentVariables = new Set(
-      collectDocumentVariables(document.getText()).map((variable) =>
+      collectDocumentVariables(text).map((variable) =>
         variable.name.toLowerCase(),
       ),
     );
@@ -25,7 +28,7 @@ export class VariableSemanticTokensProvider
       const line = document.lineAt(lineNumber).text;
       for (const reference of findVariableReferences(
         line,
-        document.getText(),
+        text,
         document.offsetAt(new vscode.Position(lineNumber, 0)),
       )) {
         const normalizedName = reference.name.toLowerCase();
@@ -52,6 +55,20 @@ export class VariableSemanticTokensProvider
           );
         }
       }
+    }
+
+    for (const reference of findParameterReferences(text)) {
+      builder.push(
+        new vscode.Range(document.positionAt(reference.start), document.positionAt(reference.end)),
+        'parameter',
+        ['readonly'],
+      );
+    }
+    for (const reference of findParameterValueReferences(text)) {
+      builder.push(
+        new vscode.Range(document.positionAt(reference.start), document.positionAt(reference.end)),
+        reference.type === 'boolean' ? 'keyword' : reference.type,
+      );
     }
 
     return builder.build();

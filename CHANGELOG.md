@@ -4,6 +4,14 @@ All notable changes to Azure Pipelines Field Guide are documented here.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for how to structure this file.
 
+## [Unreleased]
+
+### Added
+
+- IntelliSense for parameters declared in the current YAML document inside valid `${{ parameters.name }}` template expressions.
+- Allowed-value IntelliSense from current-document parameter `values:` lists in defaults and compile-time comparisons, with type-aware YAML and expression literal insertion.
+- Semantic highlighting for declared parameter references and typed allowed values in declarations, defaults, and compile-time comparisons.
+
 ## [v1.0.0] - 2026-10-04
 
 ### Added

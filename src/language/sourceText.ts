@@ -44,7 +44,7 @@ export function maskYamlComments(text: string): string {
 
     if (
       character === '#' &&
-      (index === 0 || characters[index - 1] === ' ' || characters[index - 1] === '\t')
+      (index === 0 || /[\s]/u.test(characters[index - 1] ?? ''))
     ) {
       let commentIndex = index;
       while (

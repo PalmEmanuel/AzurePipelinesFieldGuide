@@ -11,6 +11,8 @@ extension activation
   ├─ completion provider ─┬─ completion-context parser
   │                       ├─ document-variable collector
   │                       └─ predefined-variable catalog
+  ├─ parameter completion provider ─┬─ template-expression context parser
+  │                                 └─ document-parameter collector
   ├─ hover provider ──────┴─ shared variable model
   ├─ semantic-token provider ─ variable-reference parser
   ├─ variable catalog webview ─ predefined-variable catalog
@@ -37,8 +39,10 @@ The manifest declares `ms-azure-devops.azure-pipelines` in `extensionDependencie
 `src/extension.ts` is the composition root. On activation it creates the diagnostics collection and variable-catalog webview provider, then registers all language features against the selector `{ language: 'azure-pipelines', scheme: '*' }`:
 
 - Completion provider, triggered after `.`, `(`, `'`, and `"`.
+- Parameter completion provider, triggered after `.` and restricted to `${{ parameters.<name> }}`.
 - Hover provider.
 - Semantic-token provider using the `variable` legend with readonly/default-library modifiers for predefined variables.
+- The same semantic-token provider emits readonly `parameter` tokens and typed `string`, `number`, and boolean `keyword` tokens for valid parameter references and allowed values. Manifest scope mappings provide theme fallbacks.
 - Code-action provider for syntax diagnostics and Quick Fixes.
 - Activity Bar webview provider for the predefined-variable catalog.
 
@@ -70,6 +74,12 @@ Complete predefined-variable references are also matched case-insensitively, mat
 Predefined-variable presentations include the conventional environment-variable equivalent: names are uppercased and periods are mapped to underscores, such as `Build.BuildId` → `BUILD_BUILDID`.
 
 The syntax diagnostics provider only warns for clear malformed index references in expression contexts, such as `variables[Build.SourceBranch]`. It also checks casing inside expression references, where the expression engine may require the documented spelling. Macro references remain case-insensitive and do not receive casing warnings. Bare text like `Build.` is ignored.
+
+Parameter completion uses only root-level list declarations under `parameters:` in the current document. It suggests valid simple parameter identifiers only while the cursor is in an open `${{ ... }}` expression and directly after the `parameters.` namespace. Runtime `$[ ... ]` expressions, macros, nested `variables.parameters` paths, expression string literals, and YAML comments are excluded. The provider inserts only the declared parameter name, leaving the surrounding template expression intact.
+
+Allowed-value completion uses the bundled `yaml` parser to read typed scalar `values:` lists and identify direct `default:` keys without confusing them with nested fields or template-call inputs. An unfinished default scalar is masked before parsing. Expression tokenization recognizes direct literal arguments in `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`, and `notIn` calls where the first argument is `parameters.name`. Strings are serialized as JSON-compatible YAML quotes in defaults and single-quoted Azure literals with doubled apostrophes in expressions; numbers and booleans remain unquoted. Unsupported, dynamic, or type-mismatched entries are excluded. Malformed declaration documents do not produce value suggestions.
+
+Parameter-value highlighting reuses the declaration parser and comparison-context lookup. It emits single-line scalar ranges only for typed allowed-list entries, matching defaults, and complete allowed literals in supported comparisons. Parameter reference highlighting reuses template-expression context detection and current-document name discovery. Variable and parameter tokens are emitted by one provider to preserve existing variable highlighting.
 
 The variable catalog is exposed through a custom webview in the Azure Pipelines Field Guide Activity Bar container as one compact alphabetical list. Each variable is an expandable HTML details block with a wrapped full description, macro/expression/property and environment-variable syntax rows, one copy button that opens the same dynamic context menu as right-click, environment-variable metadata, template availability, and an official Microsoft Learn button. The webview also provides a non-sticky search field; its copy and documentation actions are validated in the extension host before they are performed. The view is backed entirely by the bundled catalog and never performs network retrieval at runtime.
 
