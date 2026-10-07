@@ -104,13 +104,6 @@ jobs:
       - name: Install VSCE
         run: npm install --global @vscode/vsce
 
-      - name: Verify package version
-        shell: bash
-        run: |
-          version="$(node -p "require('./package.json').version")"
-          tag_version="${GITHUB_REF_NAME#v}"
-          test "${tag_version}" = "${version}"
-
       - name: Azure Login with Workload Identity Federation
         uses: azure/login@v3
         with:
@@ -134,10 +127,15 @@ jobs:
         shell: bash
         run: |
           version="$(node -p "require('./package.json').version")"
-          vsix_file="azure-pipelines-field-guide-${version}.vsix"
+          tag_version="${GITHUB_REF_NAME#v}"
+          vsix_file="azure-pipelines-field-guide-${tag_version}.vsix"
           package_args=(--no-dependencies --out "${vsix_file}")
           if [[ "${GITHUB_REF_NAME}" == *-preview ]]; then
             package_args+=(--pre-release)
+          fi
+          # VSCE rejects a version bump when the manifest already has that version.
+          if [[ "${tag_version}" != "${version}" ]]; then
+            package_args+=("${tag_version}" --no-git-tag-version)
           fi
           vsce package "${package_args[@]}"
           echo "filename=${vsix_file}" >> "${GITHUB_OUTPUT}"
